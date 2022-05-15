@@ -3,6 +3,7 @@ version: '3.4'
 services:
     sofar:
         image: sofar
+        container_name: sofar
         restart: unless-stopped
 #        volumes:
 #            - ./src:/usr/src/app
