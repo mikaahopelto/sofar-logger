@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+    sofar:
+        image: sofar
+        restart: unless-stopped
+#        volumes:
+#            - ./src:/usr/src/app
+        build:
+            context: ./sofar
+            dockerfile: ./Dockerfile
+    influxdb:
+        image: influxdb:2.2.0
+        container_name: influxdb
+        restart: unless-stopped
+        ports:
+            - 8086:8086
+        volumes:
+            - $PWD/influxdb:/var/lib/influxdb  
