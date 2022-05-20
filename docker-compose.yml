@@ -17,4 +17,15 @@ services:
         ports:
             - 8086:8086
         volumes:
-            - $PWD/influxdb:/var/lib/influxdb  
+            - $PWD/influxdb:/var/lib/influxdb 
+    rabbitmq:
+        image: rabbitmq:3.10.1-management-alpine
+        container_name: rabbitmq
+        restart: unless-stopped
+        hostname: rabbitmq
+        ports:
+        - 5672:5672
+        - 15672:15672
+        volumes:
+        - ./rabbitmq/data/:/var/lib/rabbitmq/
+        - ./rabbitmq/log/:/var/log/rabbitmq

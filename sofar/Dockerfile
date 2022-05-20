@@ -16,7 +16,7 @@ RUN go build -o /go/bin/hello
 ############################
 # STEP 2 build a small image
 ############################
-FROM scratch
+FROM alpine:3.15.4
 # Copy our static executable.
 COPY --from=builder /go/bin/hello /go/bin/hello
 # Run the hello binary.
