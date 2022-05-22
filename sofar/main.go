@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -10,34 +12,33 @@ import (
 func main() {
 	for {
 		time.Sleep(5 * time.Second)
-		fmt.Println("Hello")
-		connStr := "amqp://guest:guest@rabbitmq:5672/"
+		connStr := fmt.Sprintf("amqp://%s:%s@%s/", os.Getenv("AMQP_USER"), os.Getenv("AMQP_PASSWORD"), os.Getenv("AMQP_HOST"))
 		conn, err := amqp.Dial(connStr)
 		if err != nil {
-			fmt.Printf("Failed to connect to %s: %s", connStr, err.Error())
+			log.Printf("Failed to connect to %s: %s", connStr, err.Error())
 			continue
 		}
 		defer conn.Close()
 		ch, err := conn.Channel()
 		if err != nil {
-			fmt.Printf("Failed to open channel. %s", err)
+			log.Printf("Failed to open channel. %s", err)
 			continue
 		}
 		defer ch.Close()
 		// We create a Queue to send the message to.
 		q, err := ch.QueueDeclare(
-			"sofar-queue", // name
-			false,         // durable
-			false,         // delete when unused
-			false,         // exclusive
-			false,         // no-wait
-			nil,           // arguments
+			os.Getenv("AMQP_QUEUE"), // name
+			false,                   // durable
+			false,                   // delete when unused
+			false,                   // exclusive
+			false,                   // no-wait
+			nil,                     // arguments
 		)
 		if err != nil {
-			fmt.Printf("Failed to declare queue. %s", err)
+			log.Printf("Failed to declare queue. %s", err)
 			continue
 		}
-		body := fmt.Sprintf(`{"Testing": "%s"}`, time.Now().UTC().String())
+		body := fmt.Sprintf(`{"temperature": 3, "b": 4, "timestamp": %d}`, time.Now().UnixMilli())
 		err = ch.Publish(
 			"",     // exchange
 			q.Name, // routing key
@@ -48,8 +49,9 @@ func main() {
 				Body:        []byte(body),
 			})
 		if err != nil {
-			fmt.Printf("Failed to send message. %s", err)
+			log.Printf("Failed to send message. %s", err)
 			continue
 		}
+		fmt.Println(body)
 	}
 }
