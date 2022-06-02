@@ -1,47 +1,35 @@
 version: '3.4'
 
 services:
-    sofar:
-        image: sofar
-        container_name: sofar
+    sofar-reader:
+        image: sofar-reader
+        container_name: sofar-reader
         restart: unless-stopped
 #        volumes:
 #            - ./src:/usr/src/app
         env_file:
             - .env
         build:
-            context: ./sofar
+            context: ./sofar-reader
             dockerfile: ./Dockerfile
     sofardb:
-        image: influxdb:2.2.0
+        image: timescale/timescaledb:2.7.0-pg14
         container_name: sofardb
         restart: unless-stopped
         ports:
-            - 8086:8086
+            - ${DBPORT:?".env file not set"}:5432
         volumes:
-            - ./sofardb/data:/var/lib/influxdb
-            - ./sofardb/config:/etc/influxdb2
-        environment:
-            - DOCKER_INFLUXDB_INIT_MODE=setup
+            - ./sofardb/data:/var/lib/postgresql/data
         env_file:
             - .env
-    rabbitmq:
+    sofarmq:
         image: rabbitmq:3.10.1-management-alpine
-        container_name: rabbitmq
+        container_name: sofarmq
         restart: unless-stopped
         hostname: rabbitmq
         ports:
         - 5672:5672
         - 15672:15672
         volumes:
-        - ./rabbitmq/data/:/var/lib/rabbitmq/
-        - ./rabbitmq/log/:/var/log/rabbitmq
-    telegraf:
-        image: telegraf:1.22.4-alpine
-        container_name: telegraf
-        restart: unless-stopped
-        volumes:
-        - ./rabbitmg-to-influxdb.telegraf.conf:/etc/telegraf/telegraf.conf
-        env_file:
-            - .env
-#        ports: 8094:8094
+        - ./sofarmq/data/:/var/lib/rabbitmq/
+        - ./sofarmq/log/:/var/log/rabbitmq
